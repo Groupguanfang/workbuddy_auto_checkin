@@ -49,6 +49,27 @@ jobs:
         id: run
         env:
           WB_ACCESS_TOKEN: ${{ secrets.WB_ACCESS_TOKEN }}
+          WB_ACCESS_TOKEN_1: ${{ secrets.WB_ACCESS_TOKEN_1 }}
+          WB_ACCESS_TOKEN_2: ${{ secrets.WB_ACCESS_TOKEN_2 }}
+          WB_ACCESS_TOKEN_3: ${{ secrets.WB_ACCESS_TOKEN_3 }}
+          WB_ACCESS_TOKEN_4: ${{ secrets.WB_ACCESS_TOKEN_4 }}
+          WB_ACCESS_TOKEN_5: ${{ secrets.WB_ACCESS_TOKEN_5 }}
+          WB_ACCESS_TOKEN_6: ${{ secrets.WB_ACCESS_TOKEN_6 }}
+          WB_ACCESS_TOKEN_7: ${{ secrets.WB_ACCESS_TOKEN_7 }}
+          WB_ACCESS_TOKEN_8: ${{ secrets.WB_ACCESS_TOKEN_8 }}
+          WB_ACCESS_TOKEN_9: ${{ secrets.WB_ACCESS_TOKEN_9 }}
+          WB_ACCESS_TOKEN_10: ${{ secrets.WB_ACCESS_TOKEN_10 }}
+          WB_ACCOUNT_NAME: ${{ vars.WB_ACCOUNT_NAME }}
+          WB_ACCOUNT_NAME_1: ${{ vars.WB_ACCOUNT_NAME_1 }}
+          WB_ACCOUNT_NAME_2: ${{ vars.WB_ACCOUNT_NAME_2 }}
+          WB_ACCOUNT_NAME_3: ${{ vars.WB_ACCOUNT_NAME_3 }}
+          WB_ACCOUNT_NAME_4: ${{ vars.WB_ACCOUNT_NAME_4 }}
+          WB_ACCOUNT_NAME_5: ${{ vars.WB_ACCOUNT_NAME_5 }}
+          WB_ACCOUNT_NAME_6: ${{ vars.WB_ACCOUNT_NAME_6 }}
+          WB_ACCOUNT_NAME_7: ${{ vars.WB_ACCOUNT_NAME_7 }}
+          WB_ACCOUNT_NAME_8: ${{ vars.WB_ACCOUNT_NAME_8 }}
+          WB_ACCOUNT_NAME_9: ${{ vars.WB_ACCOUNT_NAME_9 }}
+          WB_ACCOUNT_NAME_10: ${{ vars.WB_ACCOUNT_NAME_10 }}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           WB_ENDPOINT: https://copilot.tencent.com
           WB_RESULT_FILE: ${{ runner.temp }}/wb_result.json

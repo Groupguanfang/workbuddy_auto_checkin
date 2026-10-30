@@ -1,6 +1,6 @@
 # workbuddy_auto_checkin
 
-WorkBuddy「Buddy 加油站」的每日自动化：**签到领积分**、**派猫猫旅行并领回礼物**，结果推送到飞书。
+WorkBuddy「Buddy 加油站」的每日自动化：**多账号签到领积分**、**派猫猫旅行并领回礼物**，结果汇总推送到飞书。
 
 跑在 GitHub Actions 上，按 cron 每天定时执行，不需要任何常开设备。
 
@@ -105,13 +105,26 @@ WorkBuddy「Buddy 加油站」的每日自动化：**签到领积分**、**派�
 
 **方式 A：电脑上装了 gh CLI —— 自动写入，最省事**
 
-在项目文件夹里运行：
+单账号兼容模式：
 
 ```
 python refresh_token.py --gh-repo 你的用户名/workbuddy_auto_checkin
 ```
 
-脚本会解密并直接把 token 写进你仓库的 Secret，屏幕显示「已写入」即可跳到第 5 步。
+多账号模式推荐使用账号槽位。先登录第一个账号：
+
+```
+python refresh_token.py --gh-repo 你的用户名/workbuddy_auto_checkin --slot 1 --name 主号
+```
+
+然后在 WorkBuddy 切换账号并等待登录完成，再依次运行：
+
+```
+python refresh_token.py --gh-repo 你的用户名/workbuddy_auto_checkin --slot 2 --name 小号
+python refresh_token.py --gh-repo 你的用户名/workbuddy_auto_checkin --slot 3 --name 账号三
+```
+
+最多支持 10 个账号。每次只覆盖指定槽位，不会影响其他账号。
 
 **方式 B：没装 gh CLI —— 先打印出来，再手动粘贴**
 
@@ -137,11 +150,12 @@ python refresh_token.py
 
 | Name | Secret 里填什么 |
 | --- | --- |
-| `WB_ACCESS_TOKEN` | 第 4 步方式 B 复制的那串字符 |
+| `WB_ACCESS_TOKEN` | 单账号兼容模式的 token |
+| `WB_ACCESS_TOKEN_1` ... `_10` | 多账号模式各槽位的 token |
 | `FEISHU_WEBHOOK` | 第 3 步拿到的飞书机器人地址 |
 
-> 方式 A 已经自动写入 `WB_ACCESS_TOKEN` 的，这里只需要再填 `FEISHU_WEBHOOK` 一条。
-> 填完这个页面应该能看到两条记录（如上面截图所示）。
+> 使用方式 A 时脚本会自动写入对应 Secret；`--name` 会同时写入不敏感的账号显示名称。
+> 多账号槽位存在时，运行器会优先使用槽位并忽略旧版 `WB_ACCESS_TOKEN`，避免同一账号重复执行。
 
 ### 第 6 步：手动跑一次验证
 
@@ -158,7 +172,9 @@ python refresh_token.py
 
 | 变量 | 必填 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| `WB_ACCESS_TOKEN` | 是 | — | 访问令牌。缺失则直接退出（exit 2） |
+| `WB_ACCESS_TOKEN` | 二选一 | — | 旧版单账号访问令牌 |
+| `WB_ACCESS_TOKEN_1` ... `_10` | 二选一 | — | 多账号 token 槽位，允许不连续 |
+| `WB_ACCOUNT_NAME_1` ... `_10` | 否 | `账号 N` | 对应槽位的显示名称，使用 GitHub Variables |
 | `FEISHU_WEBHOOK` | 建议 | — | 飞书自定义机器人地址。缺失则不推送，仅打印日志 |
 | `WB_ENDPOINT` | 否 | `https://copilot.tencent.com` | 接口地址 |
 | `WB_RESULT_FILE` | 否 | — | 写入 Markdown 汇总表，供 Actions 的 step summary 使用 |

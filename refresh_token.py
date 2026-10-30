@@ -8,6 +8,7 @@
 用法：
     python refresh_token.py                       # 打印 token + 手动配置指引
     python refresh_token.py --gh-repo OWNER/REPO  # 有 gh CLI 时直接写入 Secret
+    python refresh_token.py --gh-repo OWNER/REPO --slot 2 --name 小号
                                                   # 没有 gh 则打印 token + 手动配置指引
 （打包成 refresh_token.exe 后用法相同，双击运行等价于无参数形式）
 
@@ -260,11 +261,30 @@ def normalize_repo(value):
     return repo
 
 
+def argument_value(args, name):
+    if name not in args:
+        return None
+    index = args.index(name)
+    if index + 1 >= len(args):
+        raise SystemExit("%s 后缺少参数" % name)
+    return args[index + 1]
+
+
 def main():
-    gh_repo = None
     args = sys.argv[1:]
-    if "--gh-repo" in args:
-        gh_repo = normalize_repo(args[args.index("--gh-repo") + 1])
+    repo_arg = argument_value(args, "--gh-repo")
+    gh_repo = normalize_repo(repo_arg) if repo_arg else None
+    slot_arg = argument_value(args, "--slot")
+    account_name = argument_value(args, "--name")
+    slot = None
+    if slot_arg is not None:
+        try:
+            slot = int(slot_arg)
+        except ValueError:
+            raise SystemExit("--slot 必须是 1 到 10 的整数")
+        if not 1 <= slot <= 10:
+            raise SystemExit("--slot 必须是 1 到 10 的整数")
+    secret_name = "WB_ACCESS_TOKEN_%d" % slot if slot else "WB_ACCESS_TOKEN"
 
     auth_file = find_auth_file()
     if not auth_file:
@@ -289,13 +309,24 @@ def main():
     if gh_repo and shutil.which("gh") is not None:
         # 明文 token 只作为 stdin 传给 gh，不出现在命令行与进程列表中
         proc = subprocess.run(
-            ["gh", "secret", "set", "WB_ACCESS_TOKEN", "--repo", gh_repo],
+            ["gh", "secret", "set", secret_name, "--repo", gh_repo],
             input=token.encode("utf-8"),
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         if proc.returncode != 0:
             raise SystemExit("写入 GitHub Secret 失败：" + proc.stderr.decode("utf-8", "replace"))
-        print("已写入 GitHub Secret WB_ACCESS_TOKEN（仓库 %s）" % gh_repo)
+        if slot and account_name:
+            proc = subprocess.run(
+                ["gh", "variable", "set", "WB_ACCOUNT_NAME_%d" % slot,
+                 "--repo", gh_repo, "--body", account_name],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            if proc.returncode != 0:
+                raise SystemExit("token 已写入，但账号名称写入失败：" +
+                                 proc.stderr.decode("utf-8", "replace"))
+        print("已写入 GitHub Secret %s（仓库 %s）" % (secret_name, gh_repo))
+        if slot and account_name:
+            print("已设置账号 %d 的显示名称：%s" % (slot, account_name))
         return
 
     if gh_repo:
@@ -304,7 +335,7 @@ def main():
     print("  1) 复制下方两个标记之间的 token")
     if gh_repo:
         print("  2) 打开 https://github.com/%s/settings/secrets/actions/new" % gh_repo)
-        print("  3) Name 填 WB_ACCESS_TOKEN，Secret 粘贴 token，保存")
+        print("  3) Name 填 %s，Secret 粘贴 token，保存" % secret_name)
         print("如需自动写入，安装 gh CLI（https://cli.github.com/）后执行 gh auth login")
     else:
         print("  2) GitHub Actions 版：你仓库的 Settings → Secrets and variables → Actions，"
