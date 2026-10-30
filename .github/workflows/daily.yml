@@ -33,6 +33,7 @@ jobs:
         env:
           WB_ACCESS_TOKEN: ${{ secrets[format('WB_ACCESS_TOKEN_{0}', matrix.slot)] }}
           WB_ACCOUNT_NAME: ${{ vars[format('WB_ACCOUNT_NAME_{0}', matrix.slot)] }}
+          WB_ACCOUNT_SLOT: ${{ matrix.slot }}
           WB_ENDPOINT: https://copilot.tencent.com
           WB_RESULT_FILE: ${{ runner.temp }}/summary.md
           WB_RESULT_JSON_FILE: ${{ runner.temp }}/result.json

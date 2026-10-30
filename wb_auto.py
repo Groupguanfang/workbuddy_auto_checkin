@@ -370,7 +370,11 @@ def discover_accounts():
         accounts.append({"slot": slot, "name": name, "token": token})
     legacy = os.environ.get("WB_ACCESS_TOKEN")
     if not accounts and legacy:
-        accounts.append({"slot": 0, "name": os.environ.get("WB_ACCOUNT_NAME") or "账号 1",
+        try:
+            slot = int(os.environ.get("WB_ACCOUNT_SLOT") or 0)
+        except ValueError:
+            slot = 0
+        accounts.append({"slot": slot, "name": os.environ.get("WB_ACCOUNT_NAME") or "账号 1",
                          "token": legacy})
     return accounts
 
