@@ -471,6 +471,8 @@ def main():
             "name": item["name"],
             "checkin": item["checkin"],
             "buddy": item["buddy"],
+            "checkin_line": item["checkin_line"],
+            "buddy_line": item["buddy_line"],
             "overall_ok": item["overall_ok"],
         } for item in results],
         "push": {"ok": push_ok, "reason": push_reason},
@@ -481,6 +483,13 @@ def main():
     result_file = os.environ.get("WB_RESULT_FILE")
     if result_file:
         write_result_file(result_file, results, push_ok, push_reason, overall_ok)
+    result_json_file = os.environ.get("WB_RESULT_JSON_FILE")
+    if result_json_file:
+        try:
+            with open(result_json_file, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False)
+        except OSError as e:
+            log("JSON 结果文件写入失败：%s" % e)
 
     return 0 if overall_ok else 1
 

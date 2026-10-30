@@ -270,6 +270,32 @@ def argument_value(args, name):
     return args[index + 1]
 
 
+def update_account_slots(repo, slot):
+    """把新槽位并入 matrix 变量；读取失败时以当前槽位初始化。"""
+    proc = subprocess.run(
+        ["gh", "variable", "get", "WB_ACCOUNT_SLOTS", "--repo", repo,
+         "--json", "value", "--jq", ".value"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    slots = []
+    if proc.returncode == 0:
+        try:
+            slots = json.loads(proc.stdout.decode("utf-8"))
+        except (ValueError, UnicodeError):
+            slots = []
+    if not isinstance(slots, list):
+        slots = []
+    slots = sorted(set([int(value) for value in slots] + [slot]))
+    proc = subprocess.run(
+        ["gh", "variable", "set", "WB_ACCOUNT_SLOTS", "--repo", repo,
+         "--body", json.dumps(slots, separators=(",", ":"))],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if proc.returncode != 0:
+        raise SystemExit("token 已写入，但 matrix 槽位列表更新失败：" +
+                         proc.stderr.decode("utf-8", "replace"))
+
+
 def main():
     args = sys.argv[1:]
     repo_arg = argument_value(args, "--gh-repo")
@@ -324,6 +350,8 @@ def main():
             if proc.returncode != 0:
                 raise SystemExit("token 已写入，但账号名称写入失败：" +
                                  proc.stderr.decode("utf-8", "replace"))
+        if slot:
+            update_account_slots(gh_repo, slot)
         print("已写入 GitHub Secret %s（仓库 %s）" % (secret_name, gh_repo))
         if slot and account_name:
             print("已设置账号 %d 的显示名称：%s" % (slot, account_name))

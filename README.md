@@ -2,7 +2,8 @@
 
 WorkBuddy「Buddy 加油站」的每日自动化：**多账号签到领积分**、**派猫猫旅行并领回礼物**，结果汇总推送到飞书。
 
-跑在 GitHub Actions 上，按 cron 每天定时执行，不需要任何常开设备。
+跑在 GitHub Actions 上，按 cron 每天定时执行，不需要任何常开设备。多账号使用
+matrix 独立并行运行，最后由汇总 job 统一生成报告和飞书卡片。
 
 > **两种运行方式，签到逻辑完全一致，二选一：**
 >
@@ -125,6 +126,7 @@ python refresh_token.py --gh-repo 你的用户名/workbuddy_auto_checkin --slot 
 ```
 
 最多支持 10 个账号。每次只覆盖指定槽位，不会影响其他账号。
+脚本会自动维护 `WB_ACCOUNT_SLOTS` 变量，workflow 只为已配置的账号创建 matrix job。
 
 **方式 B：没装 gh CLI —— 先打印出来，再手动粘贴**
 
@@ -175,6 +177,7 @@ python refresh_token.py
 | `WB_ACCESS_TOKEN` | 二选一 | — | 旧版单账号访问令牌 |
 | `WB_ACCESS_TOKEN_1` ... `_10` | 二选一 | — | 多账号 token 槽位，允许不连续 |
 | `WB_ACCOUNT_NAME_1` ... `_10` | 否 | `账号 N` | 对应槽位的显示名称，使用 GitHub Variables |
+| `WB_ACCOUNT_SLOTS` | 自动 | `[1]` | 已启用槽位 JSON，由 `refresh_token.py --slot` 自动维护 |
 | `FEISHU_WEBHOOK` | 建议 | — | 飞书自定义机器人地址。缺失则不推送，仅打印日志 |
 | `WB_ENDPOINT` | 否 | `https://copilot.tencent.com` | 接口地址 |
 | `WB_RESULT_FILE` | 否 | — | 写入 Markdown 汇总表，供 Actions 的 step summary 使用 |
