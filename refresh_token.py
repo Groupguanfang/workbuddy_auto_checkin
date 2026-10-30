@@ -289,7 +289,7 @@ def main():
     if gh_repo and shutil.which("gh") is not None:
         # 明文 token 只作为 stdin 传给 gh，不出现在命令行与进程列表中
         proc = subprocess.run(
-            ["gh", "secret", "set", "WB_ACCESS_TOKEN", "--repo", gh_repo, "--body", "-"],
+            ["gh", "secret", "set", "WB_ACCESS_TOKEN", "--repo", gh_repo],
             input=token.encode("utf-8"),
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
